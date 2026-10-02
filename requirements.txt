@@ -1,0 +1,21 @@
+# Install CPU-only torch first (much smaller than the CUDA build):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# then:
+#   pip install -r requirements.txt
+#   pip install -e .
+
+# method
+numpy
+scipy
+opencv-python        # Farneback flow, remap, KLT tracking
+# evaluation and benchmark clip generation
+scikit-image         # PSNR, SSIM, NMI
+lpips                # scoring only (pretrained network, never used inside the method)
+torch                # needed by lpips and by the benchmark's refraction model
+# tooling
+matplotlib
+imageio
+imageio-ffmpeg
+pandas
+tqdm
+ipykernel

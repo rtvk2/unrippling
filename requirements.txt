@@ -4,6 +4,14 @@
 #   pip install -r requirements.txt
 #   pip install -e .
 
+# 1. Clone the reference repos into external/ (pinned commits, needs git)
+# python scripts/fetch_external.py repos
+
+# 2. Stream the MFIR benchmark subset into data/mfir/
+# python scripts/fetch_external.py mfir --types shallow --max-profiles 1
+
+
+
 # method
 numpy
 scipy

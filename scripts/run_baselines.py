@@ -25,6 +25,8 @@ def clips(mfir_amplitudes):
                 for amp in mfir_amplitudes:
                     yield f"mfir_{wave}_{amp}", f"{bg[:-4]}_{profile}", \
                         lambda b=bg, w=wave, p=profile, a=amp: data.load_mfir(b, w, p, a)
+    for name in data.mfir_demo_names():  # temporary stand-in while data/mfir is not downloaded
+        yield "mfir_demo_ocean_extreme", name, lambda n=name: data.load_mfir_demo(n, gray=False)
     for name in data.own_names():
         yield "own", name, lambda n=name: data.load_own(n)
 

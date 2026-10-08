@@ -99,6 +99,18 @@ def load_mfir(background, wave_type, profile, amplitude="low", L=199, size=512, 
     return torch.cat(clip).permute(0, 2, 3, 1).numpy(), gt
 
 
+def mfir_demo_names():
+    return sorted(p.stem for p in paths.MFIR_DEMO.glob("Ocean_extreme_*.gif"))
+
+
+def load_mfir_demo(name, gray=False, max_frames=None):
+    """Demo GIFs from the benchmark repo: 720x360 side-by-side, left = distorted, right = ground truth.
+    The GIF is palette-quantised, so the ground truth is the temporal median of the right half."""
+    both = read_video(paths.MFIR_DEMO / f"{name}.gif", gray, max_frames)
+    w = both.shape[2] // 2
+    return both[:, :, :w], np.median(both[:, :, w:], axis=0)
+
+
 # ---------------------------------------------------------------- our own recordings
 
 def own_names():

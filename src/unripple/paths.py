@@ -13,6 +13,8 @@ JAMES_SUPPLEMENTAL = EXTERNAL / "CompressiveFlows" / "Supplemental_Material_ICCV
 
 # Shugaev et al. [3]: backgrounds + wave profiles streamed by scripts/fetch_external.py mfir
 MFIR = DATA / "mfir"
+# Stand-in until MFIR is downloaded: the 3 Ocean_extreme demo GIFs shipped in the benchmark repo (left: distorted, right: ground truth)
+MFIR_DEMO = EXTERNAL / "refractive-mfir-benchmark" / "assets"
 
 # Our own tray recordings
 OWN = DATA / "own"

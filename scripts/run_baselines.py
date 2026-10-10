@@ -34,6 +34,8 @@ def clips(mfir_amplitudes):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-lpips", action="store_true")
+    ap.add_argument("--crop", type=int, default=4, help="border pixels removed before scoring (same for every method)")
+    ap.add_argument("--score-rgb", action="store_true", help="score on RGB instead of the default grayscale")
     ap.add_argument("--mfir-amplitudes", nargs="+", default=["low", "mid"])
     args = ap.parse_args()
 
@@ -46,7 +48,7 @@ def main():
             est = fn(frames)
             runtime = time.perf_counter() - t
             data.save_image(out / dataset / f"{name}_{method}.png", est)
-            m = all_metrics(est, gt, with_lpips=not args.no_lpips)
+            m = all_metrics(est, gt, with_lpips=not args.no_lpips, crop=args.crop, gray=not args.score_rgb)
             rows.append({"dataset": dataset, "clip": name, "method": method, "frames": len(frames),
                          "size": "x".join(map(str, gt.shape[:2])), **m, "runtime_s": runtime})
             print(f"{dataset:22s} {name:28s} {method:6s} " + " ".join(f"{k}={v:.4f}" for k, v in m.items()))

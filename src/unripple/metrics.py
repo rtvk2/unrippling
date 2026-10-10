@@ -47,9 +47,22 @@ def lpips(x, gt, net="vgg"):
         return float(_lpips_models[net](to_tensor(x), to_tensor(gt)))
 
 
-def all_metrics(x, gt, with_lpips=True):
+def luma(im):
+    """RGB (H, W, 3) -> grayscale (H, W), ITU-R BT.601 weights; (H, W) is returned unchanged."""
+    im = np.asarray(im, dtype=np.float64)
+    return im if im.ndim == 2 else im @ np.array([0.299, 0.587, 0.114])
+
+
+def all_metrics(x, gt, with_lpips=True, crop=0, gray=True):
+    """Convention (pipeline.md, Stage 0): methods run on RGB data and return RGB images; scoring is on
+    grayscale (`gray=True`) unless `gray=False`. `crop` pixels are cut from every border of both images
+    first (warping leaves edge artefacts)."""
     x = np.clip(np.asarray(x, dtype=np.float64), 0, 1)
     gt = np.asarray(gt, dtype=np.float64)
+    if gray:
+        x, gt = luma(x), luma(gt)
+    if crop:
+        x, gt = x[crop:-crop, crop:-crop], gt[crop:-crop, crop:-crop]
     out = {"psnr": psnr(x, gt), "ssim": ssim(x, gt), "nmi": nmi(x, gt), "rrmse": rrmse(x, gt)}
     if with_lpips:
         out["lpips_vgg"] = lpips(x, gt)

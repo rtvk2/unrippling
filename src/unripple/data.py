@@ -46,7 +46,7 @@ def james_names():
     return sorted(p.stem for p in paths.JAMES_VIDEOS.glob("*.avi"))
 
 
-def load_james(name, gray=True, max_frames=None):
+def load_james(name, gray=False, max_frames=None):
     frames = read_video(paths.JAMES_VIDEOS / f"{name}.avi", gray, max_frames)
     gt = read_image(paths.JAMES_GT / f"{name}.png", gray)
     return frames, gt
@@ -117,7 +117,7 @@ def own_names():
     return sorted(p.name for p in paths.OWN.iterdir() if p.is_dir() and p.name != "raw") if paths.OWN.exists() else []
 
 
-def load_own(name, gray=True, max_frames=None):
+def load_own(name, gray=False, max_frames=None):
     """data/own/<name>/still.* (calm water, ground truth) and wavy.* (disturbed water), same fixed camera.
     The ground truth is the temporal median of the still clip, which removes sensor noise."""
     d = paths.OWN / name

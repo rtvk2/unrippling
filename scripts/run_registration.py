@@ -19,10 +19,6 @@ from unripple.metrics import all_metrics
 from unripple.registration import register
 
 
-def crop(im, b):
-    return im[b:-b, b:-b] if b else im
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-lpips", action="store_true")
@@ -33,7 +29,7 @@ def main():
     ap.add_argument("--average", choices=["mean", "median", "trimmed"], default="mean")
     ap.add_argument("--flow-sigma", type=float, default=0.0, help="Gaussian smoothing of the flow (px)")
     ap.add_argument("--max-frames", type=int, help="use only the first N frames (faster)")
-    ap.add_argument("--crop", type=int, default=8, help="border pixels removed before metrics (warping edge artefacts)")
+    ap.add_argument("--crop", type=int, default=4, help="border pixels removed before scoring, same as run_baselines.py")
     args = ap.parse_args()
 
     out = paths.RESULTS / "registration"
@@ -55,7 +51,7 @@ def main():
         for method, im, runtime in [("mean", temporal_mean(frames), 0.0), ("median", temporal_median(frames), 0.0),
                                     ("registered", est, reg_runtime)]:
             data.save_image(out / dataset / f"{name}_{method}.png", im)
-            m = all_metrics(crop(im, args.crop).clip(0, 1), crop(gt, args.crop), with_lpips=not args.no_lpips)
+            m = all_metrics(im.clip(0, 1), gt, with_lpips=not args.no_lpips, crop=args.crop)
             rows.append({"dataset": dataset, "clip": name, "method": method, "frames": len(frames),
                          **m, "runtime_s": runtime})
             print(f"  {method:10s} " + " ".join(f"{k}={v:.4f}" for k, v in m.items()))

@@ -49,6 +49,14 @@ PREFIX = "dataset_refractive_mfir_benchmark/"
 WAVE_DIRS = {"ocean": "Ocean_waves", "shallow": "Shallow_waves", "sine": "Sine_waves", "ripple": "Ripples"}
 
 
+ARCHIVE_GB = 12.9 * 3 + 5.2  # total compressed size of the four parts
+
+
+def fmt_time(s):
+    s = int(s)
+    return f"{s // 3600}:{s % 3600 // 60:02d}:{s % 60:02d}"
+
+
 def fetch_repos():
     EXTERNAL.mkdir(exist_ok=True)
     for name, (url, sha) in REPOS.items():
@@ -71,10 +79,11 @@ class PartsStream(io.RawIOBase):
     gzip stream.
     """
 
-    def __init__(self, urls, retries=20):
+    def __init__(self, urls, retries=20, on_progress=None):
         self.urls, self.retries = urls, retries
         self.idx, self.offset_in_part, self.total = 0, 0, 0
         self.part_size, self.resp = None, None
+        self.on_progress, self._last_tick = on_progress, 0.0
 
     def readable(self):
         return True
@@ -107,6 +116,10 @@ class PartsStream(io.RawIOBase):
             if n:
                 self.offset_in_part += n
                 self.total += n
+                now = time.time()
+                if self.on_progress and now - self._last_tick >= 1.0:  # throttled: at most once a second
+                    self._last_tick = now
+                    self.on_progress()
                 return n
             if self.resp is not None:
                 self.resp.close()
@@ -136,7 +149,16 @@ def fetch_mfir(types, max_profiles, budget_gb):
     def done():
         return all(len(kept[w]) >= max_profiles and all((w, p) in closed for p in kept[w]) for w in wanted)
 
-    raw = PartsStream(PARTS)
+    t0, note = time.time(), ""
+
+    def progress():
+        el = time.time() - t0
+        gb = raw.total / 1e9
+        speed = raw.total / el / 1e6 if el > 0 else 0.0
+        print(f"\r  {gb:6.2f}/{ARCHIVE_GB:.1f} GB streamed ({100 * gb / ARCHIVE_GB:4.1f}%) | {speed:5.1f} MB/s | "
+              f"elapsed {fmt_time(el)} | written {written / 1e9:.2f} GB | {note}\033[K", end="", flush=True)
+
+    raw = PartsStream(PARTS, on_progress=progress)
     with tarfile.open(fileobj=io.BufferedReader(raw, 1 << 20), mode="r|gz") as tar:
         for m in tar:
             if not m.isfile() or not m.name.startswith(PREFIX):
@@ -179,9 +201,12 @@ def fetch_mfir(types, max_profiles, budget_gb):
                 out.parent.mkdir(parents=True, exist_ok=True)
                 np.save(out, arr.astype(np.float32))
                 written += out.stat().st_size
-            print(f"\r  {wave}/{profile}/{fname}  written {written / 1e9:.2f} GB", end="", flush=True)
+            note = f"{wave}/{profile}/{fname}"
+            progress()
     index.close()
-    print(f"\nDone. Streamed {raw.total / 1e9:.2f} GB, wrote {written / 1e9:.2f} GB to {MFIR_DIR}")
+    el = time.time() - t0
+    print(f"\nDone in {fmt_time(el)}. Streamed {raw.total / 1e9:.2f} GB ({raw.total / el / 1e6:.1f} MB/s avg), "
+          f"wrote {written / 1e9:.2f} GB to {MFIR_DIR}")
     print("Kept profiles:", {w: p for w, p in kept.items()})
 
 

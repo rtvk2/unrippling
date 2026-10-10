@@ -20,6 +20,3 @@ Thumbs.db
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-
-#todo
-pipeline.md

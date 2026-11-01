@@ -3,13 +3,16 @@
     python scripts/run_registration.py --no-lpips
     python scripts/run_registration.py --rounds 5 --average trimmed --datasets james2019
 
-Writes results/registration/<dataset>/<clip>_{mean,median,registered}.png, a per-round diagnostics table
+Writes results/registration/<dataset>/<clip>_{input,mean,median,registered,gt}.png (input = first distorted
+frame), <clip>_comparison.png (the same five side by side, labelled), a per-round diagnostics table
 (registration_rounds.csv) and the metrics (metrics.csv). Same clips as run_baselines.py.
 """
 
 import argparse
 import time
 
+import cv2
+import numpy as np
 import pandas as pd
 
 from run_baselines import clips
@@ -17,6 +20,15 @@ from unripple import data, paths
 from unripple.baselines import temporal_mean, temporal_median
 from unripple.metrics import all_metrics
 from unripple.registration import register
+
+
+def labelled(im, text):
+    """Copy of an image in [0, 1] as RGB with `text` in a black band at the top (drawn in uint8, as OpenCV 5 requires)."""
+    im = np.asarray(im if im.ndim == 3 else np.repeat(im[..., None], 3, -1))
+    u8 = np.ascontiguousarray(np.clip(im * 255 + 0.5, 0, 255).astype(np.uint8))
+    cv2.rectangle(u8, (0, 0), (u8.shape[1], 30), (0, 0, 0), -1)
+    cv2.putText(u8, text, (8, 21), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
+    return u8.astype(np.float32) / 255
 
 
 def main():
@@ -27,7 +39,7 @@ def main():
     ap.add_argument("--rounds", type=int, default=4)
     ap.add_argument("--init", choices=["mean", "median"], default="median")
     ap.add_argument("--average", choices=["mean", "median", "trimmed"], default="mean")
-    ap.add_argument("--flow-sigma", type=float, default=0.0, help="Gaussian smoothing of the flow (px)")
+    ap.add_argument("--flow-sigma", type=float, default=8.0, help="Gaussian smoothing of the flow (px); 8 = tuned default")
     ap.add_argument("--max-frames", type=int, help="use only the first N frames (faster)")
     ap.add_argument("--crop", type=int, default=4, help="border pixels removed before scoring, same as run_baselines.py")
     args = ap.parse_args()
@@ -48,6 +60,7 @@ def main():
         reg_runtime = time.perf_counter() - t
         rounds += [{"dataset": dataset, "clip": name, **h} for h in hist]
 
+        panels = [labelled(frames[0], "input (frame 0)")]
         for method, im, runtime in [("mean", temporal_mean(frames), 0.0), ("median", temporal_median(frames), 0.0),
                                     ("registered", est, reg_runtime)]:
             data.save_image(out / dataset / f"{name}_{method}.png", im)
@@ -55,6 +68,10 @@ def main():
             rows.append({"dataset": dataset, "clip": name, "method": method, "frames": len(frames),
                          **m, "runtime_s": runtime})
             print(f"  {method:10s} " + " ".join(f"{k}={v:.4f}" for k, v in m.items()))
+            panels.append(labelled(im.clip(0, 1), f"{method}  {m['psnr']:.2f} dB / SSIM {m['ssim']:.3f}"))
+        data.save_image(out / dataset / f"{name}_input.png", frames[0])
+        data.save_image(out / dataset / f"{name}_gt.png", gt)
+        data.save_image(out / dataset / f"{name}_comparison.png", np.concatenate(panels + [labelled(gt, "ground truth")], axis=1))
 
     out.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(rows)

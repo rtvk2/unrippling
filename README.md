@@ -15,6 +15,17 @@ pip install -e .
 ```bash
 python scripts/fetch_external.py repos
 ```
+## 2b. (Optional) Download the full MFIR benchmark archive (43.8 GB, resumable, MD5-checked)
+Uses 16 parallel connections (Zenodo caps each one at ~0.3 MB/s); re-run the same command to resume.
+Keep the archive outside OneDrive.
+```bash
+python scripts/fetch_external.py download --dest C:/mfir_archive
+```
+Then extract all wave profiles into data/mfir/ (normals saved as float32):
+```bash
+python scripts/fetch_external.py mfir --archive C:/mfir_archive --types ocean shallow sine ripple --max-profiles 1000 --budget-gb 200
+```
+
 check : 
 ```bash
     python -m pip install -e

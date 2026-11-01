@@ -53,8 +53,12 @@ def robust_average(stack, how="mean", trim=0.1):
     raise ValueError(f"unknown average '{how}'")
 
 
+# Frozen defaults (pipeline.md, stage 2 tuning; results/tuning/dev_summary.csv and dev_full_summary.csv, dev split only):
+# mean beat median averaging in every setting; flow_sigma 8 beat 0/2/4 (50 frames) and 16 (199 frames), tied with 12
+# (+3.39 vs +3.41 dB over the median) but with a better worst group; 4 rounds was best for sigma 8. tol=0 runs all rounds,
+# as in the tuning.
 def register(frames, rounds=4, winsizes=DEFAULT_WINSIZES, init="median", average="mean", trim=0.1,
-             flow_sigma=0.0, tol=1e-3, gt=None, workers=None, verbose=False):
+             flow_sigma=8.0, tol=0.0, gt=None, workers=None, verbose=False, on_round=None):
     """Iteratively register `frames` (T, H, W[, 3], floats in [0, 1]) to their own template.
 
     Flow is computed on grayscale and applied to every channel. Returns (registered, template, flows, history):
@@ -63,6 +67,8 @@ def register(frames, rounds=4, winsizes=DEFAULT_WINSIZES, init="median", average
       history:    one dict per round with mean/max flow magnitude (px), template change and,
                   when `gt` is given, template PSNR.
     Stops early once the template changes by less than `tol` (RMS, in [0, 1] units) between rounds.
+    on_round(k, template), if given, is called after every round (k from 1) with that round's template,
+    so one run can score every round count (used by scripts/tune_registration.py).
     """
     frames = np.asarray(frames, dtype=np.float32)
     template = (np.median if init == "median" else np.mean)(frames, axis=0).astype(np.float32)
@@ -95,6 +101,8 @@ def register(frames, rounds=4, winsizes=DEFAULT_WINSIZES, init="median", average
             if verbose:
                 print("  " + "  ".join(f"{k_}={v:.4g}" if isinstance(v, float) else f"{k_}={v}" for k_, v in row.items()))
             template = new_template
+            if on_round is not None:
+                on_round(k + 1, template)
             if row["template_change"] < tol:
                 break
 

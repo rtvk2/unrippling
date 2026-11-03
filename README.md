@@ -33,13 +33,28 @@ check :
     python -c "import unripple; print(unripple.__file__)"
 ```
 
-# 3. Run the baselines (mean and median) on everything available locally ##For baselines
+# 3. Run the baselines (mean and median) on everything available locally  ## For baselines
 ```bash
 python scripts/run_baselines.py --no-lpips   # fast check
 python scripts/run_baselines.py              # full run with LPIPS
 ```
 ## For Registration
 ```bash
+python scripts/test_registration_synthetic.py   # check on a known synthetic warp
 python scripts/run_registration.py --no-lpips
 python scripts/run_registration.py --rounds 5 --average trimmed --datasets james2019
+python scripts/score_saved.py registration      # LPIPS of the saved images -> results/registration/lpips_check.csv
+```
+## For Registration tuning (dev split only)
+```bash
+python scripts/tune_registration.py                                       # 50-frame grid -> results/tuning/dev_*.csv
+python scripts/tune_registration.py --frames 199 --flow-sigma 8 12 16 --average mean --tag full   # full-length check
+python scripts/tune_registration.py --split test --frames 199 --flow-sigma 8 --average mean       # frozen setting, test split, run once
+```
+
+## For Robust PCA
+```bash
+python scripts/test_rpca_synthetic.py           # solver check on known low-rank + sparse data
+python scripts/run_rpca.py --no-lpips           # register, then RPCA -> results/rpca/
+python scripts/score_saved.py rpca              # LPIPS of the saved images -> results/rpca/lpips_check.csv
 ```

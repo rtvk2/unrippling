@@ -2,6 +2,7 @@
 
     python scripts/run_rpca.py
     python scripts/run_rpca.py --datasets james2019 --max-frames 50
+    python scripts/run_rpca.py --split test      # score once on the test split (MFIR backgrounds 8-15)
 
 Registers every clip with the frozen stage 2 setting, runs inexact-ALM RPCA on the registered frames
 (lambda = 1/sqrt(max(H*W*C, T)), no tuning) and scores the temporal mean of the low-rank part. Writes
@@ -17,6 +18,7 @@ import pandas as pd
 
 from run_baselines import clips
 from run_registration import labelled
+from tune_registration import clips as split_clips
 from unripple import data, paths
 from unripple.baselines import temporal_median
 from unripple.metrics import all_metrics
@@ -34,12 +36,16 @@ def main():
     ap.add_argument("--tol", type=float, default=1e-4, help="stopping tolerance; see rpca_image")
     ap.add_argument("--crop", type=int, default=4, help="border pixels removed before scoring, same as run_baselines.py")
     ap.add_argument("--tag", default="", help="write to results/rpca_<tag>/ so runs do not overwrite each other")
+    ap.add_argument("--split", choices=["test"], help="use the frozen test split (pipeline.md data split rule) "
+                    "instead of all development clips; writes results/rpca_test/")
     args = ap.parse_args()
 
-    out = paths.RESULTS / ("rpca" + (f"_{args.tag}" if args.tag else ""))
+    tag = args.tag or (args.split or "")
+    out = paths.RESULTS / ("rpca" + (f"_{tag}" if tag else ""))
     out.mkdir(parents=True, exist_ok=True)
     rows, iters = [], []
-    for dataset, name, load in clips(args.mfir_amplitudes):
+    clip_iter = split_clips(args.split, args.max_frames or 199) if args.split else clips(args.mfir_amplitudes)
+    for dataset, name, load in clip_iter:
         if args.datasets and not dataset.startswith(tuple(args.datasets)):
             continue
         frames, gt = load()

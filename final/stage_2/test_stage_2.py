@@ -65,3 +65,12 @@ def test_rounds_resample_originals():
     np.testing.assert_array_equal(
         aligned, np.stack([warp(frame, d).clip(0, 1) for frame, d in zip(f, field)])
     )
+
+
+def test_motion_summary_uses_first_round_interior():
+    rng = np.random.default_rng(21)
+    im = rng.random((42, 48), dtype=np.float32)
+    frames = np.stack([np.roll(im, k, axis=1) for k in (-1, 0, 1, 0, 2)])
+    _, _, flow, history = register(frames, rounds=1)
+    expected = np.linalg.norm(flow[::4, 16:-16, 16:-16], axis=-1).mean()
+    np.testing.assert_allclose(history[0]["sampled_first_round_px"], expected)

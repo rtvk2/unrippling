@@ -1,5 +1,6 @@
 """Decode the first N observations and take the same central square on both inputs."""
 
+import json
 from itertools import islice
 from pathlib import Path
 import cv2
@@ -7,6 +8,12 @@ import numpy as np
 from utils.image_io import read_image
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+PUBLIC = {
+    name.lower(): (name, info["group"])
+    for name, info in json.loads((ROOT / "data/manifest.json").read_text()).items()
+}
 
 
 def square(im, size):
@@ -35,7 +42,12 @@ def load(dataset, count, size, source=None, amplitude=2.0):
         ref = square(camera().astype(np.float32) / 255, size)
         fields = smooth_flows(count, size, size, amplitude, 8, np.random.default_rng(0))
         return np.stack([warp(ref, f).clip(0, 1) for f in fields]), ref
-    path = Path(source) if source else ROOT / "data/real" / (dataset.title() + ".avi")
+    if source:
+        path = Path(source)
+    else:
+        name, group = PUBLIC[dataset]
+        folder = "public_synthetic" if group == "Synthetic" else "real"
+        path = ROOT / "data" / folder / (name + ".avi")
     if not path.exists():
         raise FileNotFoundError(
             f"{path}: run python data/download_data.py or pass --source"

@@ -11,12 +11,9 @@ from filelock import FileLock
 ROOT = Path(__file__).resolve().parents[1]
 PIN = "78d9320d50f00803b085c2a095094fc1796db241"
 BASE = f"https://raw.githubusercontent.com/jeringeo/CompressiveFlows/{PIN}/Dataset/"
-FILES = {
-    "Checker.avi": (16341942, "76434f2fe4eb04fb59091f2b27bd81eae513855f"),
-    "Checker.png": (317842, "2395ea9ef2de11af9bde22b6600116286e83abd2"),
-    "Middle.avi": (3263352, "baab278549104cab660e388230d32d7f6ee6a368"),
-    "Middle.png": (44408, "f6c271768abdb260c7fde72e67204e7a9113a781"),
-}
+ASSETS = json.loads((ROOT / "data/manifest.json").read_text())
+FILES = {f"{name}.{suffix}": pair for name, asset in ASSETS.items()
+         for suffix,pair in asset["files"].items()}
 
 
 def valid(path, size, digest):
@@ -44,7 +41,9 @@ def download(names, budget):
         for name, (size, digest) in FILES.items():
             if Path(name).stem.lower() not in names:
                 continue
-            path = dest / name
+            asset_dir = ROOT / "data/public_synthetic" if ASSETS[Path(name).stem]["group"] == "Synthetic" else dest
+            asset_dir.mkdir(parents=True, exist_ok=True)
+            path = asset_dir / name
             folder = "DistortedVideos" if name.endswith(".avi") else "GroundTruthImages"
             if valid(path, size, digest):
                 print(f"Verified {name}")
@@ -85,7 +84,7 @@ def download(names, budget):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--datasets", nargs="+", default=["checker", "middle"], choices=["checker", "middle"])
-    parser.add_argument("--budget-bytes", type=int, default=5_000_000_000)
+    parser.add_argument("--datasets", nargs="+", default=["checker", "middle"], choices=sorted(n.lower() for n in ASSETS))
+    parser.add_argument("--budget-bytes", type=int, default=500_000_000)
     args = parser.parse_args()
-    download(args.datasets, min(args.budget_bytes, 5_000_000_000))
+    download(args.datasets, min(args.budget_bytes, 500_000_000))

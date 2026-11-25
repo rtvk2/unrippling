@@ -144,6 +144,9 @@ def register(
                 from utils.metrics import psnr
 
                 row["template_psnr"] = float(psnr(np.clip(new_template, 0, 1), gt))
+            # Report-only subset statistic adapted from main's estimate_distortion.
+            if k == 0 and min(mag.shape[1:]) > 32:
+                row["sampled_first_round_px"] = float(mag[::4, 16:-16, 16:-16].mean())
             history.append(row)
             if verbose:
                 print(

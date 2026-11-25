@@ -1,4 +1,108 @@
-# Cloud experiments
+# Final course evaluation
+
+Six public source videos cover five captured clips (Checker, Middle, Cartoon, Eye and Small) and one authors’ simulated clip (Vision). They supply 606 original frames; the first 100 of each gave 600 unique public input frames. Four scaled distortions of one clean cameraman image add 80 generated frame instances. They share one seed and motion realization and are four conditions, not four independent scenes. Across ten cases the release contains 40 primary images and 40 baseline images. It also includes 39 additional V1/V3 images and 18 refined reconstructions, for **137 scored image outputs**. Figures, PNG/float copies, earlier trials and smoke tests are excluded from this count. The two primary branches produced 1,360 registered frame instances; six additional final refined stacks contributed 600. Intermediate arrays can be regenerated locally.
+
+## Public videos
+
+Each clip has equal weight. PSNR and SSIM use unit-range floating-point grayscale reconstructions; LPIPS-VGG receives the same four-pixel interior crop in three replicated channels. Time includes registration once for a downstream output and excludes decoding, file I/O, charts and metric evaluation. The public experiment uses the first 100 frames, center-square resize to 256 × 256, two frame workers, CPU VGG and two BLAS/OpenMP threads. Wall-clock times are single-run observations on an AMD EPYC 9V74 cloud host with a two-vCPU quota. Earlier Checker/Middle wall times including all plots, metrics and I/O are retained below. Concurrent host activity can influence timings.
+
+| Method | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Time (s) ↓ |
+| --- | --- | --- | --- | --- |
+| mean | 20.0376 | 0.5835 | 0.4647 | 0.0049 |
+| median | 19.8185 | 0.6472 | 0.3722 | 0.1302 |
+| Farnebäck average | 23.0641 | 0.8365 | 0.1178 | 6.2128 |
+| Farnebäck RPCA | 23.0359 | 0.8406 | 0.1051 | 8.5536 |
+| Farnebäck fusion V2 | 22.6007 | 0.8320 | 0.0941 | 6.4704 |
+| Fourier average | 25.1787 | 0.8501 | 0.1493 | 9.0569 |
+| Fourier RPCA | 25.4529 | 0.8672 | 0.1223 | 11.3792 |
+| Fourier fusion V2 | 24.1833 | 0.8422 | 0.1227 | 9.3009 |
+
+### PSNR by video
+
+| Method | Cartoon | Checker | Eye | Middle | Small | Vision |
+| --- | --- | --- | --- | --- | --- | --- |
+| Fourier RPCA | 28.9790 | 23.8101 | 31.0626 | 25.2432 | 26.4108 | 17.2115 |
+| Fourier average | 28.8992 | 23.4291 | 30.8358 | 24.4203 | 26.2203 | 17.2677 |
+| Fourier fusion V2 | 28.0750 | 22.2125 | 29.3423 | 23.1198 | 25.5526 | 16.7976 |
+| mean | 23.5033 | 16.5029 | 22.3482 | 19.2113 | 22.1098 | 16.5499 |
+| median | 23.1376 | 16.9738 | 22.3432 | 18.7589 | 22.1963 | 15.5011 |
+| Farnebäck RPCA | 23.8037 | 18.6081 | 27.1395 | 22.5378 | 26.1769 | 19.9498 |
+| Farnebäck average | 24.0359 | 18.6537 | 27.1826 | 22.6752 | 26.1360 | 19.7010 |
+| Farnebäck fusion V2 | 22.8220 | 18.4184 | 26.6594 | 22.0135 | 25.6523 | 20.0388 |
+
+Fourier RPCA leads the eight prespecified methods in PSNR on five videos. On Vision, Farnebäck fusion V2 reaches 20.04 dB while Fourier RPCA reaches 17.21 dB. Thus the two initial clips overstate how reliably the Fourier branch leads. Equal-weight LPIPS favors Farnebäck fusion V2. Its average PSNR is lower than the Farnebäck average.
+
+## Fusion ablation
+
+| Method | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Time (s) ↓ |
+| --- | --- | --- | --- | --- |
+| Farnebäck fusion V1 | 22.5476 | 0.8285 | 0.0971 | 6.4594 |
+| Farnebäck fusion V2 | 22.6007 | 0.8320 | 0.0941 | 6.4704 |
+| Farnebäck fusion V3 | 22.6171 | 0.8339 | 0.0921 | 6.4995 |
+| Fourier fusion V1 | 23.6687 | 0.8242 | 0.1364 | 9.2993 |
+| Fourier fusion V2 | 24.1833 | 0.8422 | 0.1227 | 9.3009 |
+| Fourier fusion V3 | 24.4301 | 0.8487 | 0.1165 | 9.3613 |
+
+V3 beats V2 in LPIPS on all 12 public branch–clip pairs, in PSNR on 10/12 and in SSIM on 11/12. The exceptions in PSNR are Eye with optical flow and Cartoon with Fourier registration. V3 is a reasonable development choice when confidence is available and perceptual similarity is the priority. Keep V2 as the reproducible course comparison default: it applies to both unrefined and refined stacks and to clips with sparse support. All V2 and V3 scores come from the same per-branch stack. Refined Fourier lacks an independently estimated confidence map.
+
+## Polynomial refinement
+
+| Method | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Time (s) ↓ |
+| --- | --- | --- | --- | --- |
+| Fourier average | 26.1929 | 0.8966 | 0.0953 | 5.6081 |
+| Fourier RPCA | 26.3005 | 0.9038 | 0.0863 | 7.8787 |
+| Fourier fusion V2 | 25.7118 | 0.8965 | 0.0807 | 5.8739 |
+
+These runs apply the same residual polynomial-flow option to all six public inputs. Against the corresponding unrefined Fourier result, PSNR increases for all 18 pairs and LPIPS decreases for all 18. The RPCA SSIM on Checker falls slightly. Refined V2 gains 2.81 dB on Middle and 1.37 dB on Vision. The unrefined timed registration includes split-track fits for V3; refined timing omits those fits. Comparing their total seconds does not isolate the cost of the refinement itself. [Individual refinement scores](../comparison/results/course/refinement.csv)
+
+## Controlled distortion
+
+The labels low, medium, high and extreme correspond to 1, 2, 3 and 6 px RMS. Each clip uses 20 frames at 128 square, NumPy seed 0, independent Gaussian fields smoothed at sigma 8 px, temporal mean removed, scaled to the target RMS. Frames sample the clean cameraman image at grid plus the imposed displacement. These labels are internal and have no calibration to MFIR amplitudes.
+
+| method | 1 px | 2 px | 3 px | 6 px |
+| --- | --- | --- | --- | --- |
+| Fourier RPCA | 33.0369 | 28.5971 | 25.6681 | 20.4997 |
+| Fourier average | 33.0605 | 28.4203 | 25.3567 | 20.1049 |
+| Fourier fusion V2 | 30.8163 | 25.1985 | 21.7763 | 16.8538 |
+| mean | 29.2203 | 24.6824 | 22.7302 | 20.0948 |
+| median | 31.4400 | 25.8719 | 23.8148 | 20.8689 |
+| Farnebäck RPCA | 33.6469 | 29.6072 | 26.8860 | 22.5442 |
+| Farnebäck average | 33.6421 | 29.3974 | 26.7822 | 22.6355 |
+| Farnebäck fusion V2 | 31.8604 | 27.3928 | 24.2309 | 20.1403 |
+
+![Score and timing trends across the four imposed amplitudes](../comparison/results/course/distortion_levels.png)
+
+At 6 px only six tracks survive. Both Fourier coordinates reach the 500-iteration cap and the stationarity residuals exceed 1e−4. Fourier V3 is unavailable because fewer than eight tracks cannot form two usable halves. V2 Fourier fusion falls to 16.85 dB, below the temporal mean at 20.09 dB. All eight primary rows remain available. The full CSV includes every observed PSNR, SSIM, VGG LPIPS and time. [All measurements](../comparison/results/course/combined.csv)
+
+## Visual comparison index
+
+| Case | Artifacts |
+|---|---|
+| checker | [Four primary](../comparison/results/checker/9d47ebe6af67/primary.png) · [Eight + input + reference](../comparison/results/checker/9d47ebe6af67/comparison.png) · [Scores](../comparison/results/checker/9d47ebe6af67/metrics.csv) |
+| middle | [Four primary](../comparison/results/middle/4d86b0ef1cba/primary.png) · [Eight + input + reference](../comparison/results/middle/4d86b0ef1cba/comparison.png) · [Scores](../comparison/results/middle/4d86b0ef1cba/metrics.csv) |
+| cartoon | [Four primary](../comparison/results/cartoon/d19edd5500e2/primary.png) · [Eight + input + reference](../comparison/results/cartoon/d19edd5500e2/comparison.png) · [Scores](../comparison/results/cartoon/d19edd5500e2/metrics.csv) |
+| eye | [Four primary](../comparison/results/eye/c67ef1ce34c2/primary.png) · [Eight + input + reference](../comparison/results/eye/c67ef1ce34c2/comparison.png) · [Scores](../comparison/results/eye/c67ef1ce34c2/metrics.csv) |
+| small | [Four primary](../comparison/results/small/dd2b22e9b936/primary.png) · [Eight + input + reference](../comparison/results/small/dd2b22e9b936/comparison.png) · [Scores](../comparison/results/small/dd2b22e9b936/metrics.csv) |
+| vision | [Four primary](../comparison/results/vision/8eb4243fe361/primary.png) · [Eight + input + reference](../comparison/results/vision/8eb4243fe361/comparison.png) · [Scores](../comparison/results/vision/8eb4243fe361/metrics.csv) |
+| Generated 1 px | [Four primary](../comparison/results/synthetic/792626a1c579/primary.png) · [Eight + input + reference](../comparison/results/synthetic/792626a1c579/comparison.png) · [Scores](../comparison/results/synthetic/792626a1c579/metrics.csv) |
+| Generated 2 px | [Four primary](../comparison/results/synthetic/33b1a1c9615a/primary.png) · [Eight + input + reference](../comparison/results/synthetic/33b1a1c9615a/comparison.png) · [Scores](../comparison/results/synthetic/33b1a1c9615a/metrics.csv) |
+| Generated 3 px | [Four primary](../comparison/results/synthetic/1c1acb66ab93/primary.png) · [Eight + input + reference](../comparison/results/synthetic/1c1acb66ab93/comparison.png) · [Scores](../comparison/results/synthetic/1c1acb66ab93/metrics.csv) |
+| Generated 6 px | [Four primary](../comparison/results/synthetic/fd3914b6f5e1/primary.png) · [Eight + input + reference](../comparison/results/synthetic/fd3914b6f5e1/comparison.png) · [Scores](../comparison/results/synthetic/fd3914b6f5e1/metrics.csv) |
+
+## Provenance and reproduction
+
+The five published comparisons from the earlier cloud work (Checker, Middle and generated 1/3/6 px) retain their original scores. Four additional public runs and the 2 px run complete the ten-case table. Eighteen refined results were measured using six shared refined registrations. The earlier two refinement-only average rows remain in the historical section. The new course measurements ran on the a05cf67 implementation with dataset/CLI extensions; branch 792549e moved those algorithms into final/. No score-changing implementation was substituted. Independent replay and isolated tests check the reorganized implementation. The final diagnostic additions are outside the restoration calculation. No teammate sweep rows were reused. [Run manifest](../comparison/results/course/runs.json) · [Branch audit](branch_comparison.md)
+
+From final/, run the six-clip downloader command in the README, then `python -m comparison.batch --refine`. This creates fresh run IDs and a separate manifest. Use `python -m comparison.course` to rebuild the combined tables from the shipped manifest. The eight unevaluated public clips have pinned entries. To extend the same comparison:
+
+```sh
+python data/download_data.py --datasets bluetiles brickwall bricks dices elephant handwritten math tiny
+python -m comparison.batch --datasets bluetiles brickwall bricks dices elephant handwritten math tiny --amplitudes
+```
+
+# Historical cloud experiments on Checker and Middle
+
+
 
 ## Development protocol
 
@@ -119,8 +223,6 @@ python -m comparison.compare
 The two legacy synthetic verifiers belong to the historical development code outside `final/`. They reach the stage implementations through the `src/unripple` compatibility imports, so run them from the repository root with both folders on the path (`PYTHONPATH=src:final`, or `src;final` on Windows). They write to the root `results/` folder.
 
 ```sh
-python scripts/test_rpca_synthetic.py
-python scripts/test_registration_synthetic.py --frames 8 --size 80 --rounds 2 --amplitudes 1 2 4 --crop 4
 ```
 
 The full suite passed 27 tests. Stage counts were 8, 6, 5, 4 and 4. The environment emitted one pytest plugin deprecation warning. Individual stage suites, each stage CLI on an 8-frame 80 × 80 Checker smoke case, both full capture runs and comparison plotting executed. Separate processes reloaded each saved Checker registration and regenerated RPCA and V2 fusion with maximum absolute pixel difference 0 for all four reconstructions. The original ten RPCA cases passed before and after refactoring. [Ten-case results](rpca_verification.csv) The corrected eight-frame regression reported EPE 0.440, 0.949 and 2.127 px for nominal 1, 2 and 4 px warps. Each amplitude in that legacy script draws a new random field. The smaller synthetic pytest cases also assert signed translation, nonrigid flow, FFT adjoints and partial Fourier recovery.

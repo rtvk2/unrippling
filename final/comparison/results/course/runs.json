@@ -1,0 +1,76 @@
+[
+  {
+    "dataset": "checker",
+    "run_id": "9d47ebe6af67",
+    "refined": [
+      "e05467fc20ca",
+      "964b8592b13c",
+      "ab58e1e748b1"
+    ]
+  },
+  {
+    "dataset": "middle",
+    "run_id": "4d86b0ef1cba",
+    "refined": [
+      "c177c6c433b4",
+      "848660c0b35a",
+      "18aeb566b0e5"
+    ]
+  },
+  {
+    "dataset": "cartoon",
+    "run_id": "d19edd5500e2",
+    "refined": [
+      "f3b45672a387",
+      "6354e418ee8b",
+      "01f071b4fcec"
+    ]
+  },
+  {
+    "dataset": "eye",
+    "run_id": "c67ef1ce34c2",
+    "refined": [
+      "c863ebdc29bb",
+      "5163a573352c",
+      "763b9b5a6f34"
+    ]
+  },
+  {
+    "dataset": "small",
+    "run_id": "dd2b22e9b936",
+    "refined": [
+      "a9b6a60845f9",
+      "077e2705a066",
+      "4ca851819aac"
+    ]
+  },
+  {
+    "dataset": "vision",
+    "run_id": "8eb4243fe361",
+    "refined": [
+      "5da7e59932c2",
+      "21888b8894f1",
+      "b96d09a8255c"
+    ]
+  },
+  {
+    "dataset": "synthetic",
+    "run_id": "792626a1c579",
+    "rms_px": 1
+  },
+  {
+    "dataset": "synthetic",
+    "run_id": "33b1a1c9615a",
+    "rms_px": 2
+  },
+  {
+    "dataset": "synthetic",
+    "run_id": "1c1acb66ab93",
+    "rms_px": 3
+  },
+  {
+    "dataset": "synthetic",
+    "run_id": "fd3914b6f5e1",
+    "rms_px": 6
+  }
+]

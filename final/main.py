@@ -19,16 +19,16 @@ from stage_2.registration import register as optical
 from stage_3.rpca import rpca_image
 from stage_4.fusion import fuse
 from stage_5.fourier_motion import register as fourier
-from utils.data_loader import ROOT, load
+from utils.data_loader import ROOT, PUBLIC, load
 from utils.image_io import save_image
 from utils.metrics import measure
-from utils.visualization import montage
+from utils.visualization import montage, motion_figure
 
 
 def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
-        "--dataset", choices=["checker", "middle", "synthetic"], default="checker"
+        "--dataset", choices=sorted([*PUBLIC, "synthetic"]), default="checker"
     )
     p.add_argument("--source", help="custom video or lexically sorted frame directory")
     p.add_argument("--frames", type=int, default=100)
@@ -208,6 +208,7 @@ def run(a):
             reg_s = float(pd.read_csv(path / "metrics.csv").stage_s.iloc[0])
             config["parent_run"] = meta["run_id"]
         else:
+            tracks = []
             t = perf_counter()
             if is_optical:
                 result = optical(
@@ -226,12 +227,20 @@ def run(a):
                     a.iterations,
                     diagnostics=True,
                     refine=a.refine,
+                    on_tracks=tracks.append,
                 )
             stack, template, fields, history, valid, confidence = result
             reg_s = perf_counter() - t
             config["registration_branch"] = branch
             path = record(stage, branch + " average", template, reg_s)
             pd.DataFrame(history).to_csv(path / "history.csv", index=False)
+            motion_figure(
+                template,
+                fields[0],
+                valid,
+                path / "motion.png",
+                tracks[0] if tracks else None,
+            )
             if confidence is not None:
                 save_image(path / "confidence_map.png", confidence.mean(axis=0))
             if a.save_stack:
@@ -300,6 +309,9 @@ def run(a):
         config["elapsed_before_comparison_s"] = perf_counter() - start
         path = directory("comparison")
         pd.DataFrame(rows).to_csv(path / "metrics.csv", index=False)
+        from comparison.course import PRIMARY
+
+        montage({key: images[key] for key in PRIMARY}, path / "primary.png")
         montage(images, path / "comparison.png")
         save_image(path / "input.png", frames[0])
         if gt is not None:

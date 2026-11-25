@@ -19,3 +19,7 @@ The original proposal adapts Oreifej’s registration/low-rank architecture usin
 ## Evaluation boundary
 
 Ground truth enters the measurement function after reconstruction. Internal PSNR uses peak one, SSIM uses the scikit-image grayscale implementation, and LPIPS-VGG uses the official pretrained metric on three replicated intensity channels mapped to [−1,1]. All use identical floating-point images cropped by four pixels on each edge. The benchmark's eval.py scores RGB using TorchMetrics, its prediction/255 convention, both Alex and VGG LPIPS, and its own sequence aggregation. No equivalence of internal scores with its leaderboard has been established. [MFIR evaluator](https://github.com/iafoss/refractive-mfir-benchmark/blob/45eee65f291eb4cdd82987f51af3ad850f130d47/eval.py)
+
+### Motion diagnostic from the parallel development branch
+
+Stage 2 now reports the mean first-round flow magnitude on every fourth frame, excluding a 16-pixel border when an interior exists. This adopts the sampling convention of the teammate’s estimate_distortion function while using the fields already computed by the registration round. It measures apparent displacement in working-resolution pixels. The statistic does not enter template estimation, fusion or parameter selection. Fixed distortion levels in the generated study refer to the imposed field’s RMS magnitude, a different quantity.

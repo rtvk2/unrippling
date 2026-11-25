@@ -1,0 +1,2 @@
+method,main,stage_s,registration_s,total_s,decode_and_restore_s,psnr,ssim,lpips_vgg
+optical_flow average,True,6.20341967999957,0.0,6.20341967999957,6.295151301999795,26.13602130180705,0.7830704013956137,0.15917733311653137

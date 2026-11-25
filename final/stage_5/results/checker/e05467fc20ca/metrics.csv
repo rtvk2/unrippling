@@ -1,0 +1,2 @@
+method,main,stage_s,registration_s,total_s,decode_and_restore_s,psnr,ssim,lpips_vgg
+fourier average,True,5.180333338999844,0.0,5.180333338999844,5.503006950999406,23.864908665390544,0.9241336332668133,0.056026920676231384

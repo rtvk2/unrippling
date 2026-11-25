@@ -1,0 +1,7 @@
+dataset,median_reference_correlation,median_shift_x_px,median_shift_y_px
+checker,0.8748834256861233,0.75,1.0
+middle,0.8326974269350279,0.0,0.5
+cartoon,0.8492578560427244,0.75,1.0
+eye,0.8064095867479528,-0.25,0.0
+small,0.8974625824890644,0.0,0.0
+vision,0.6202841485857421,0.0,0.0

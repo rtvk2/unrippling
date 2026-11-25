@@ -44,11 +44,21 @@ def resample(frames, flow):
     return stack, masked_mean(stack, valid, frames.mean(axis=0)), valid
 
 
-def register(frames, step=8, lam=0.06, max_iter=500, diagnostics=False, refine=False):
+def register(
+    frames,
+    step=8,
+    lam=0.06,
+    max_iter=500,
+    diagnostics=False,
+    refine=False,
+    on_tracks=None,
+):
     frames = checked(frames)
     if step < 1:
         raise ValueError("grid step must be positive")
     tracks = trajectories(frames)
+    if on_tracks is not None:
+        on_tracks(tracks)
     h, w = frames.shape[1:3]
 
     def estimate(part, label):

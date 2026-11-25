@@ -103,3 +103,9 @@ All five stage entry points executed. Pytest passed 27 cases and the ten origina
 ## Repository restructuring
 
 On 25 November 2026 the completed implementation was moved, without algorithmic changes, into the self-contained `final/` folder; historical `src/`, `scripts/`, `notebooks/` and `pipeline.md` remain at the repository root. The only code changes replace imports of `unripple.data` and `unripple.metrics` with verbatim copies in `utils/image_io.py` and `utils/metrics.py`. Run from inside `final/`, pytest passed all 27 cases, including from an isolated copy of the folder, and every stage output on a synthetic fingerprint case was bit-for-bit identical to the pre-move layout.
+
+## Consolidation checkpoint
+Fetched both branches and based a separate delivery worktree on 792549e. Inspected main at 8452e2f. Its MFIR sweep enumerates a subset and its per-clip results are absent from Git. Kept historical material outside final/ in place. Recovered the four additional public runs, four-level sweep and six refinement comparisons from the course workspace. All use the same five algorithm implementations. Per-case run IDs are in comparison/results/course/runs.json.
+
+## Delivery verification
+The six public videos and four related generated cases have eight primary-comparison outputs each. Polynomial-refined Fourier averaging, RPCA and V2 fusion ran on every public video. The course manifest binds each downstream refinement to its registration. Combined tables contain 119 primary/ablation rows and 18 refinement rows. The report-only motion diagnostic was ported from main; all five restoration algorithms keep their measured definitions. From final/ and from an isolated copy with no historical unripple import available, 28 tests passed and four independent saved-stack replays were pixel-identical. See test_summary.txt and the completed project_report.md.

@@ -31,3 +31,6 @@ For reference research we inspected the paper, and the pinned MATLAB PointTracki
 | 22–24. Assertions, documentation and discovery | Confirmed, scripts/test_registration_synthetic.py 41–92 and test_rpca_synthetic.py 25–53 were standalone print/CSV scripts. Historical notebook comment also differed from default RGB loader. | Stage-local pytest suite, assertion for the ten-case verifier, updated pipeline and clarified field direction. |
 
 The legacy streaming extractor now verifies member containment under its destination. This was a static hardening change. The full upstream archive was never fetched.
+
+## Final cross-branch audit
+The current comparison, independent teammate-script checks, MFIR evidence limits and selected implementations are in [branch_comparison.md](branch_comparison.md). Final/ has no parent-package imports. The added Stage 2 report statistic and diagnostic plots do not change reconstructed intensities. The dataset manifest now handles mixed-case source names and separates public synthetic videos from real footage. The pinned download ledger remains cumulative. The batch summary uses an explicit case manifest and verifies the parent registration and input digest of every refinement result.

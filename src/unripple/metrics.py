@@ -34,14 +34,19 @@ def lpips(x, gt, net="vgg"):
     import torch
     import lpips as lpips_pkg
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"  # same network and weights; the GPU is only faster
+    # Full float32 on the GPU: with TF32 (the CUDA default) LPIPS differed from the CPU value by ~4e-4; without it
+    # the GPU value is identical to the CPU one (checked on James Eye, 2026-11-19), so old CPU scores stay comparable.
+    torch.backends.cudnn.allow_tf32 = False
+    torch.backends.cuda.matmul.allow_tf32 = False
     if net not in _lpips_models:
-        _lpips_models[net] = lpips_pkg.LPIPS(net=net, verbose=False).eval()
+        _lpips_models[net] = lpips_pkg.LPIPS(net=net, verbose=False).eval().to(device)
 
     def to_tensor(im):
         im = np.asarray(im, dtype=np.float32)
         if im.ndim == 2:
             im = np.repeat(im[..., None], 3, axis=-1)
-        return torch.from_numpy(im).permute(2, 0, 1)[None] * 2 - 1
+        return (torch.from_numpy(im).permute(2, 0, 1)[None] * 2 - 1).to(device)
 
     with torch.no_grad():
         return float(_lpips_models[net](to_tensor(x), to_tensor(gt)))

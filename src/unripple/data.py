@@ -77,10 +77,12 @@ def _pad_center_crop(im, size):
     return im[y:y + size, x:x + size]
 
 
-def load_mfir(background, wave_type, profile, amplitude="low", L=199, size=512, chunk=25):
+def load_mfir(background, wave_type, profile, amplitude="low", L=199, size=512, chunk=25, device=None):
     """Generate a distorted RGB clip the same way the benchmark's eval.py does
     (val mode: centre crop, no flips, first L frames of the profile, fixed amplitude).
-    background: file name from mfir_backgrounds(); profile: name from mfir_profiles(wave_type)."""
+    background: file name from mfir_backgrounds(); profile: name from mfir_profiles(wave_type).
+    device: None renders on the CPU (all reported numbers up to the stage 7 sweep); "cuda" renders on the GPU
+    (same torch code; eval.py itself renders on the GPU)."""
     import torch
     from .third_party.mfir_refraction import amplitudes, gen_video, paths as wave_dirs
 
@@ -91,11 +93,11 @@ def load_mfir(background, wave_type, profile, amplitude="low", L=199, size=512, 
         raise ValueError(f"{pdir} has only {len(files)} frames, need {L}")
 
     amp = amplitudes[wave_type][amplitude]
-    x = torch.from_numpy(np.ascontiguousarray(gt)).permute(2, 0, 1)[None, None]
+    x = torch.from_numpy(np.ascontiguousarray(gt)).permute(2, 0, 1)[None, None].to(device or "cpu")
     clip = []
     for s in range(0, L, chunk):  # scale/depth are fixed in eval mode, so chunking over frames is exact
-        norms = torch.from_numpy(np.stack([np.load(f) for f in files[s:s + chunk]])).float()
-        clip.append(gen_video(x, norms.permute(0, 3, 1, 2)[None], scale=amp, depth=amp)[0])
+        norms = torch.from_numpy(np.stack([np.load(f) for f in files[s:s + chunk]])).float().to(x.device)
+        clip.append(gen_video(x, norms.permute(0, 3, 1, 2)[None], scale=amp, depth=amp)[0].cpu())
     return torch.cat(clip).permute(0, 2, 3, 1).numpy(), gt
 
 

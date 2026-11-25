@@ -281,8 +281,11 @@ def download_archive(dest, parts=(1, 2, 3, 4), connections=16, segment_mb=256):
     print(f"Parts {list(parts)} downloaded and verified in {dest}")
 
 
-def fetch_mfir(types, max_profiles, budget_gb, archive=None, connections=16):
+def fetch_mfir(types, max_profiles, budget_gb, archive=None, connections=16, only=None):
+    """only: profile names to keep (e.g. ['profile_1', 'profile_2']); default = the first max_profiles in stream order."""
     wanted = {WAVE_DIRS[t] for t in types}
+    if only:
+        max_profiles = len(only)
     kept = {w: [] for w in wanted}  # wave dir -> profile names being kept, in stream order
     closed = set()                  # (wave dir, profile) that the stream has moved past
     written, budget = 0, budget_gb * 1e9
@@ -341,7 +344,7 @@ def fetch_mfir(types, max_profiles, budget_gb, archive=None, connections=16):
                 print(f"\n[{raw.total / 1e9:6.2f} GB streamed] reached {wave}/{profile}")
                 if done():
                     break
-            if wave not in wanted:
+            if wave not in wanted or (only and profile not in only):
                 continue
             if profile not in kept[wave]:
                 if len(kept[wave]) >= max_profiles:
@@ -382,10 +385,11 @@ if __name__ == "__main__":
     m.add_argument("--budget-gb", type=float, default=10.0, help="stop once this much has been written")
     m.add_argument("--connections", type=int, default=16, help="parallel HTTP connections when streaming")
     m.add_argument("--archive", help="folder with the downloaded parts (from the download command); default: stream from Zenodo")
+    m.add_argument("--profiles", nargs="+", help="keep exactly these profiles (e.g. profile_1 profile_2) instead of the first --max-profiles")
     args = ap.parse_args()
     if args.cmd == "repos":
         fetch_repos()
     elif args.cmd == "download":
         download_archive(args.dest, args.parts, args.connections)
     else:
-        fetch_mfir(args.types, args.max_profiles, args.budget_gb, args.archive, args.connections)
+        fetch_mfir(args.types, args.max_profiles, args.budget_gb, args.archive, args.connections, args.profiles)

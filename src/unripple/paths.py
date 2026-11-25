@@ -1,9 +1,13 @@
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 EXTERNAL = ROOT / "external"
 DATA = ROOT / "data"
 RESULTS = ROOT / "results"
+# Large intermediate arrays (registered stacks, ~150 MB per clip): kept OUTSIDE the OneDrive project folder so they
+# are not uploaded. Override with the UNRIPPLE_CACHE environment variable.
+CACHE = Path(os.environ.get("UNRIPPLE_CACHE", "C:/unripple_cache"))
 
 # James et al. [1]: 14 distorted videos + ground truth (Middle/Small/Tiny are Tian & Narasimhan's [5] "Real2" clips)
 JAMES = EXTERNAL / "CompressiveFlows" / "Dataset"

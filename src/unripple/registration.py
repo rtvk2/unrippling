@@ -71,7 +71,10 @@ def register(frames, rounds=4, winsizes=DEFAULT_WINSIZES, init="median", average
     so one run can score every round count (used by scripts/tune_registration.py).
     """
     frames = np.asarray(frames, dtype=np.float32)
-    template = (np.median if init == "median" else np.mean)(frames, axis=0).astype(np.float32)
+    if isinstance(init, np.ndarray):  # a starting template given by the caller (e.g. reference.mean_position_reference)
+        template = init.astype(np.float32)
+    else:
+        template = (np.median if init == "median" else np.mean)(frames, axis=0).astype(np.float32)
     winsizes = list(winsizes) + [winsizes[-1]] * max(0, rounds - len(winsizes))
     history, registered, flows = [], frames, None
 

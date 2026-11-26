@@ -1,9 +1,0 @@
-final pytest: 28 passed, 1 warning in 1.11s
-final: all five stage CLIs, main, comparison.compare, finite images and 4/4 exact stack replays passed.
-isolated pytest: 28 passed, 1 warning in 0.99s
-isolated: all five stage CLIs, main, comparison.compare, finite images and 4/4 exact stack replays passed.
-Runner: Python 3.12.14 on Linux. Both pytest runs emitted one third-party plugin deprecation warning.
-Commands: python -m pytest -q; python main.py --dataset synthetic --frames 8 --size 80 --amplitude 1 --save-stack --no-lpips; all five python -m stage_N.run_stage_N entry points; python -m comparison.compare RUN.
-The isolated copy contained only final/ source, input manifest and dependencies. Python -S disabled site hooks, and the test explicitly asserted that the historical unripple package could not be imported.
-Per-clip figures and combined plots regenerated from the explicit course manifest. Downloader verified all six pairs with zero extra asset transfer. Native Windows execution was not available.
-A Python wheel was built from final/ and inspected for the pinned data manifest, five-stage code and batch entry point. All tracked PNGs decoded, all relative Markdown links resolved to tracked files, and the 119 main/ablation score rows had unique case/method keys and finite metrics. No official MFIR scores were generated.

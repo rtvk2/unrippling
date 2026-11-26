@@ -3,24 +3,28 @@
 __pycache__/
 *.egg-info/
 .ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
 
-# third-party code and data: re-create with scripts/fetch_external.py (see README)
-external/
-data/
-results/
+# datasets: re-create with `python data/download_data.py` (see data/README.md)
+data/real/*
+!data/real/.gitkeep
+data/synthetic/*
+!data/synthetic/.gitkeep
+*.part
+*.lock
+*.tmp
+
+# results: compact images (PNG), metrics (CSV) and configurations (JSON) are kept;
+# large float arrays and registered stacks (--save-stack, --save-components) are regenerated locally
+**/results/**/*.npy
 
 # OS / editor
 .DS_Store
 Thumbs.db
 
-# LaTeX build files
-*.aux
-*.log
-*.out
-*.fls
-*.fdb_latexmk
-*.synctex.gz
-
-# Only historical top-level data/results are excluded; final/ has its own scoped rules.
-!final/data/
-!final/**/results/
+# build output
+/build/
+/dist/
+data/public_synthetic/*
+!data/public_synthetic/.gitkeep

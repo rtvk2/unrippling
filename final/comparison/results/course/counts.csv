@@ -1,0 +1,11 @@
+case,frames,side_px,primary,baseline,other_fusion,refinement_images,registered_frames,refined_frames
+checker,100,256,4,4,4,3,200,100
+middle,100,256,4,4,4,3,200,100
+cartoon,100,256,4,4,4,3,200,100
+eye,100,256,4,4,4,3,200,100
+small,100,256,4,4,4,3,200,100
+vision,100,256,4,4,4,3,200,100
+synthetic_1px,20,128,4,4,4,0,40,0
+synthetic_2px,20,128,4,4,4,0,40,0
+synthetic_3px,20,128,4,4,4,0,40,0
+synthetic_6px,20,128,4,4,3,0,40,0

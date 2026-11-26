@@ -20,3 +20,7 @@ Thumbs.db
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Only historical top-level data/results are excluded; final/ has its own scoped rules.
+!final/data/
+!final/**/results/

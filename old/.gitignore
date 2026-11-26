@@ -1,0 +1,22 @@
+# environment
+.venv/
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+
+# third-party code and data: re-create with scripts/fetch_external.py (see README)
+external/
+data/
+results/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz

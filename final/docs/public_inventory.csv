@@ -1,0 +1,15 @@
+name,group,width,height,original_frames,processed_frames,avi_bytes,reference_bytes,reference_listed,locally_downloaded,inventory_header_bytes
+BlueTiles,Synthetic,512,512,101,0,18533332,480681,True,False,256
+BrickWall,Synthetic,512,512,101,0,18197076,606069,True,False,256
+Bricks,Real1,688,512,101,0,18918380,517966,True,False,256
+Cartoon,Real1,612,512,101,100,8655756,139565,True,True,0
+Checker,Real1,752,512,101,100,16341942,317842,True,True,0
+Dices,Real1,726,512,101,0,17025398,545795,True,False,256
+Elephant,Real1,512,518,101,0,14898840,384174,True,False,256
+Eye,Real1,890,512,101,100,7715026,165118,True,True,0
+HandWritten,Synthetic,512,512,101,0,15922156,346016,True,False,256
+Math,Real1,726,512,101,0,12359620,181093,True,False,256
+Middle,Real2,293,253,101,100,3263352,44408,True,True,0
+Small,Real2,284,255,101,100,3423478,46422,True,True,0
+Tiny,Real2,282,272,101,0,2735970,44300,True,False,256
+Vision,Synthetic,512,512,101,100,5029142,141590,True,True,0
